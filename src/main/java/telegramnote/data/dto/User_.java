@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class User_ {
-    private Long chatIt;
+    private Long chatId;
     private String name;
 }

@@ -12,9 +12,4 @@ public class BotConfig {
     private String botName;
     @Value("${bot.token}")
     private String token;
-    @Value("http://localhost:8080")
-    private static String baseUrl;
-
-
-
 }
