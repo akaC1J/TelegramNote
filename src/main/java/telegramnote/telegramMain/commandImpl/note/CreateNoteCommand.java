@@ -63,7 +63,7 @@ public class CreateNoteCommand implements CommandWithText {
                 } else {
                     answer = "Заметка \"" + response.getBody().getLabel() + "\" успешно сохранено";
                 }
-                messageSender.sendMessage(currentNote.getChatId(), answer, initKeyBoard());
+                messageSender.sendMessage(currentNote.getChatId(), answer, initKeyBoard(update));
                 currentStep = Step.LABEL;
                 context.setCurrentState(CommandHandler.StateBot.WAITING_COMMAND);
                 currentNote = null;

@@ -1,6 +1,7 @@
 package telegramnote.telegramMain.commandImpl;
 
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import telegramnote.data.CustomResponse;
@@ -21,17 +22,21 @@ public class StartCommand implements Command {
 
     @Override
     public void execute(Update update) {
+        String answer = null;
         String name = update.getMessage().getChat().getFirstName();
         long chatId = update.getMessage().getChatId();
-        User_ newUser = new User_(chatId,name);
-        CustomResponse<String> register = restService.register(newUser);
-        String answer;
-        if (register.isSuccess()) {
-            answer = "Привет " + name + " приятно познакомиться!";
-        } else {
-            answer = "Ошибка! Причина: " + register.getErrorMessage();
+        CustomResponse<User_> responseFindUser = restService.getUser(chatId);
+        if (responseFindUser.isSuccess()) {
+            answer = "Привет " + responseFindUser.getBody().getName() + " давно не виделись!";
+        } else if (responseFindUser.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+            CustomResponse<User_> responseRegister = restService.postUser(new User_(chatId, name));
+            if (responseRegister.isSuccess()) {
+                answer = "Привет " + responseRegister.getBody().getName() + " приятно познакомиться!";
+            } else {
+                answer = "Ошибка! Причина: " + responseRegister.getErrorMessage();
+            }
         }
-        messageSender.sendMessage(chatId, answer, initKeyBoard());
+        messageSender.sendMessage(chatId, answer, initKeyBoard(update));
 
     }
 

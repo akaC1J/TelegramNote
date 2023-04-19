@@ -13,20 +13,24 @@ public interface Command {
     void execute(Update update);
     String getCommandIdentifier();
 
-    default ReplyKeyboard initKeyBoard() {
+    default ReplyKeyboard initKeyBoard(Object data) {
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         keyboardMarkup.setResizeKeyboard(true);
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
-
         KeyboardButton button = new KeyboardButton();
         button.setText("Создать заметку");
+
         row.add(button);
 
         button = new KeyboardButton();
         button.setText("Посмотреть заметки");
         row.add(button);
         keyboard.add(row);
+
+        KeyboardRow rowHelp = new KeyboardRow();
+        rowHelp.add(new KeyboardButton("Помощь"));
+        keyboard.add(rowHelp);
 
         keyboardMarkup.setKeyboard(keyboard);
         return keyboardMarkup;
