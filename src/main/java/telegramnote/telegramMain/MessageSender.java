@@ -3,7 +3,7 @@ package telegramnote.telegramMain;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
@@ -14,7 +14,7 @@ public class MessageSender {
         this.bot = bot;
     }
 
-    public void sendMessage(Long chatId, String textToSend, ReplyKeyboardMarkup keyboardMarkup) {
+    public void sendMessage(Long chatId, String textToSend, ReplyKeyboard keyboardMarkup) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(chatId));
         sendMessage.setText(textToSend);

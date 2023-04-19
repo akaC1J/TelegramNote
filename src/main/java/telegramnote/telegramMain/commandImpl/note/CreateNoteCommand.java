@@ -66,6 +66,7 @@ public class CreateNoteCommand implements CommandWithText {
                 messageSender.sendMessage(currentNote.getChatId(), answer, initKeyBoard());
                 currentStep = Step.LABEL;
                 context.setCurrentState(CommandHandler.StateBot.WAITING_COMMAND);
+                currentNote = null;
             }
 
         }

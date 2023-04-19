@@ -12,6 +12,8 @@ import telegramnote.data.dto.Note;
 import telegramnote.data.dto.User_;
 import telegramnote.service.RestServiceInterface;
 
+import java.util.List;
+
 @Service
 @Profile("prod")
 public final class RestService implements RestServiceInterface {
@@ -21,29 +23,44 @@ public final class RestService implements RestServiceInterface {
     public RestService(@Value("http://localhost:8080") String baseUrl) {
         this.restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(baseUrl));
-
     }
 
     @Override
     public CustomResponse<String> register(User_ newUser) {
-        CustomResponse<String> customResponse = new CustomResponse<>();
-        try {
-            ResponseEntity<String> response = restTemplate.postForEntity("/register", newUser, String.class);
-            customResponse.setBody(response.getBody());
-            return customResponse;
-
-        } catch (HttpClientErrorException e) {
-            customResponse.setErrorMessage(e.getResponseBodyAsString());
-            return customResponse;
-        }
+        return baseDoResponse(newUser, "/register", String.class, Method.POST);
     }
 
     @Override
     public CustomResponse<Note> postNote(Note note) {
-        CustomResponse<Note> customResponse = new CustomResponse<>();
+        return baseDoResponse(note, "/note", Note.class, Method.POST);
+    }
+
+    @Override
+    public CustomResponse<List<Note>> getNotes(Long chatId) {
+        @SuppressWarnings("rawtypes")
+        CustomResponse<List> listCustomResponse = baseDoResponse(chatId, "/n", List.class, Method.GET);
+        CustomResponse<List<Note>> response = new CustomResponse<>();
+        response.setSuccess(listCustomResponse.isSuccess());
+        //noinspection unchecked
+        response.setBody(listCustomResponse.getBody());
+        response.setErrorMessage(listCustomResponse.getErrorMessage());
+        return response;
+    }
+
+    private <A, P> CustomResponse<A> baseDoResponse(P singleParameter, String url,
+                                                    Class<A> answerType, Method method ) {
+        CustomResponse<A> customResponse = new CustomResponse<>();
         try {
-            ResponseEntity<Note> response = restTemplate.postForEntity("/note", note, Note.class);
-            customResponse.setBody(response.getBody());
+            ResponseEntity<A> response = null;
+            switch (method) {
+                case GET -> response = restTemplate.getForEntity(url, answerType, singleParameter);
+                case POST -> response = restTemplate.postForEntity(url, singleParameter, answerType);
+            }
+            if (response != null) {
+                customResponse.setBody(response.getBody());
+            } else {
+                customResponse.setErrorMessage("Неизвестная ошибка");
+            }
             return customResponse;
 
         } catch (HttpClientErrorException e) {
@@ -52,4 +69,7 @@ public final class RestService implements RestServiceInterface {
         }
     }
 
+    private enum Method {
+        GET,POST, DELETE,
+    }
 }

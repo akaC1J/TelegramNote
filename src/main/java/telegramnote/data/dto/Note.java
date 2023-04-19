@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Note {
+    private Long id;
     private String label;
     private Long chatId;
     private String text;
