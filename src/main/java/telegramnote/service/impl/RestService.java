@@ -29,7 +29,7 @@ public final class RestService implements RestServiceInterface {
 
     @Override
     public CustomResponse<User_> postUser(User_ newUser) {
-        return baseDoResponse(newUser, "/user", User_.class, Method.POST);
+            return baseDoResponse(newUser, "/user", User_.class, Method.POST);
     }
 
     @Override

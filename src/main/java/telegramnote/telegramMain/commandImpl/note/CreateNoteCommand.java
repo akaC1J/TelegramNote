@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import telegramnote.data.CustomResponse;
 import telegramnote.data.dto.Note;
+import telegramnote.data.dto.User_;
 import telegramnote.service.RestServiceInterface;
 import telegramnote.telegramMain.CommandHandler;
 import telegramnote.telegramMain.CommandWithText;
@@ -56,6 +57,9 @@ public class CreateNoteCommand implements CommandWithText {
                 String answer;
                 String text = update.getMessage().getText();
                 currentNote.setText(text);
+                User_ user = new User_();
+                user.setChatId(currentNote.getChatId());
+                currentNote.setUser(user);
                 CustomResponse<Note> response = restService.postNote(currentNote);
                 if (!response.isSuccess()) {
                     answer = "Не удалось сохранить заметку \"" + currentNote.getLabel() + "\"." +

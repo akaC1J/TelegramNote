@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class Note {
     private Long id;
     private String label;
+    private User_ user;
     private Long chatId;
     private String text;
 }
