@@ -11,7 +11,7 @@ import telegramnote.telegramMain.CommandHandler;
 import telegramnote.telegramMain.CommandWithText;
 import telegramnote.telegramMain.MessageSender;
 
-@Component//dsfsadads213213adsd
+@Component//dsfsadads213213adsd12
 public class CreateNoteCommand implements CommandWithText {
     private final RestServiceInterface restService;
     private final MessageSender messageSender;
