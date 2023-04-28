@@ -1,6 +1,8 @@
 package telegramnote.telegramMain.commandImpl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -11,6 +13,8 @@ import telegramnote.telegramMain.Command;
 import telegramnote.telegramMain.MessageSender;
 
 @Component
+
+@Slf4j
 public class StartCommand implements Command {
     private final RestServiceInterface restService;
     private final MessageSender messageSender;
