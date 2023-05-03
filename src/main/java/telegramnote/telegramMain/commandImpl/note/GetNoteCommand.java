@@ -1,7 +1,6 @@
 package telegramnote.telegramMain.commandImpl.note;
 
 import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -12,6 +11,7 @@ import telegramnote.data.dto.Note;
 import telegramnote.service.RestServiceInterface;
 import telegramnote.telegramMain.Command;
 import telegramnote.telegramMain.MessageSender;
+import telegramnote.telegramMain.commandImpl.ServerErrorCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +20,12 @@ import java.util.List;
 public class GetNoteCommand implements Command {
     private final RestServiceInterface restService;
     private final MessageSender messageSender;
+    private final ServerErrorCommand errorCommand;
 
-    public GetNoteCommand(RestServiceInterface restService, @Lazy MessageSender messageSender) {
+    public GetNoteCommand(RestServiceInterface restService, @Lazy MessageSender messageSender, ServerErrorCommand errorCommand) {
         this.restService = restService;
         this.messageSender = messageSender;
+        this.errorCommand = errorCommand;
     }
 
     @Override
@@ -37,7 +39,9 @@ public class GetNoteCommand implements Command {
             messageSender.answerCallBack(update.getCallbackQuery(), null);
             messageSender.sendMessage(chatId,text,initKeyBoard(response.getBody()));
         } else {
-            messageSender.answerCallBack(update.getCallbackQuery(),response.getErrorMessage());
+            messageSender.answerCallBack(update.getCallbackQuery(),null);
+            errorCommand.execute(update);
+
         }
     }
 

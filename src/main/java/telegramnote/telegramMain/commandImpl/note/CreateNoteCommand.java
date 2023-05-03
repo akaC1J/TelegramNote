@@ -74,7 +74,7 @@ public class CreateNoteCommand implements CommandWithText {
                 messageSender.sendMessage(localNote.getChatId(), answer, initKeyBoard(update));
                 currentStep.setData(localNote.getChatId(), Step.LABEL);
                 context.setCurrentState(localNote.getChatId(), CommandHandler.StateBot.WAITING_COMMAND);
-                currentNote = null;
+                currentNote.setData(localNote.getChatId(),null);
             }
 
         }

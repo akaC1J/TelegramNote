@@ -15,8 +15,14 @@ public class ServerErrorCommand implements SystemCommand{
 
     @Override
     public void execute(Update update) {
+        long chatId = -1;
+        if (update.getMessage() != null) {
+            chatId = update.getMessage().getChatId();
+
+        } else {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+        }
         String answer = "Внутрення ошибка сервера. Повторите попытку позднее";
-        long chatId = update.getMessage().getChatId();
         messageSender.sendMessage(chatId, answer,initKeyBoard(update));
     }
 

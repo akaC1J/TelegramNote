@@ -80,7 +80,7 @@ public final class RestService implements RestServiceInterface {
             response.setBody(responseEntity.getBody());
             return response;
         }catch (HttpClientErrorException | HttpServerErrorException e) {
-            response.setErrorMessage(e.getResponseBodyAsString());
+            response.setErrorMessage(e.getMessage());
             response.setStatusCode(e.getStatusCode());
             return response;
         }
