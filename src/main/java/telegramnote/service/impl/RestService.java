@@ -7,6 +7,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import telegramnote.data.CustomResponse;
@@ -14,6 +16,7 @@ import telegramnote.data.dto.Note;
 import telegramnote.data.dto.User_;
 import telegramnote.service.RestServiceInterface;
 
+import java.net.ConnectException;
 import java.util.List;
 
 @Service
@@ -29,7 +32,7 @@ public final class RestService implements RestServiceInterface {
 
     @Override
     public CustomResponse<User_> postUser(User_ newUser) {
-        return baseDoResponse(newUser, "/user", User_.class, Method.POST);
+            return baseDoResponse(newUser, "/user", User_.class, Method.POST);
     }
 
     @Override
@@ -40,7 +43,7 @@ public final class RestService implements RestServiceInterface {
             User_ forObject = restTemplate.getForObject(url, User_.class, chatId);
             customResponse.setBody(forObject);
             return customResponse;
-        } catch (HttpClientErrorException e) {
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
             customResponse.setErrorMessage(e.getResponseBodyAsString());
             customResponse.setStatusCode(e.getStatusCode());
             return customResponse;
@@ -61,8 +64,9 @@ public final class RestService implements RestServiceInterface {
             }, chatId, sizePage, offSet);
             response.setBody(responseEntity.getBody());
             return response;
-        } catch (HttpClientErrorException e) {
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
             response.setErrorMessage(e.getResponseBodyAsString());
+            response.setStatusCode(e.getStatusCode());
             return response;
         }
     }
@@ -70,20 +74,21 @@ public final class RestService implements RestServiceInterface {
     @Override
     public CustomResponse<Note> getNote(Long chatId, Long idNote) {
         CustomResponse<Note> response = new CustomResponse<>();
-        String url = "/notes/{idNote}?chatId={chatId}";
+        String url = "/note/{idNote}?chatId={chatId}";
         try {
             ResponseEntity<Note> responseEntity = restTemplate.getForEntity(url, Note.class, idNote, chatId);
             response.setBody(responseEntity.getBody());
             return response;
-        }catch (HttpClientErrorException e) {
-            response.setErrorMessage(e.getResponseBodyAsString());
+        }catch (HttpClientErrorException | HttpServerErrorException e) {
+            response.setErrorMessage(e.getMessage());
+            response.setStatusCode(e.getStatusCode());
             return response;
         }
     }
 
     @Override
     public CustomResponse<Integer> countNotesForChatId(Long chatId) {
-        String url = "/notes/count?chatId={chatId}";
+        String url = "/note/count?chatId={chatId}";
         return baseDoResponse(chatId, url, Integer.class, Method.GET);
     }
 
@@ -116,8 +121,10 @@ public final class RestService implements RestServiceInterface {
             }
             return customResponse;
 
-        } catch (HttpClientErrorException e) {
+        }
+        catch (HttpStatusCodeException e) {
             customResponse.setErrorMessage(e.getResponseBodyAsString());
+            customResponse.setStatusCode(e.getStatusCode());
             return customResponse;
         }
     }

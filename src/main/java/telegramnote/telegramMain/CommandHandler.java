@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import telegramnote.telegramMain.commandImpl.UnknownCommand;
+import telegramnote.telegramMain.commandImpl.model.DataChatId;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,8 +14,8 @@ import java.util.Map;
 public class CommandHandler {
     private final Map<String, Command> commandMap = new HashMap<>();
     private final UnknownCommand unknownCommand;
-    private Command lastCommandWithText = null;
-    private StateBot currentState = StateBot.WAITING_COMMAND;
+    private DataChatId<Command> lastCommandWithText = new DataChatId<>();
+    private DataChatId<StateBot> currentState = new DataChatId<>(StateBot.WAITING_COMMAND);
     private final MessageSender messageSender;
 
     public CommandHandler(@Lazy MessageSender messageSender, List<Command> commands,
@@ -30,7 +31,9 @@ public class CommandHandler {
     }
 
     public void handleCommand(Update update) {
-        if (currentState == StateBot.WAITING_COMMAND) {
+        long chatId = update.hasMessage() ? update.getMessage().getChatId() :
+                update.getCallbackQuery().getMessage().getChatId();
+        if (currentState.getData(chatId) == StateBot.WAITING_COMMAND) {
             String commandId;
             if (update.hasMessage()) {
                 commandId = update.getMessage().getText();
@@ -41,17 +44,17 @@ public class CommandHandler {
             if (command != null) {
                 command.execute(update);
                 if (command instanceof CommandWithText) {
-                    lastCommandWithText = command;
-                    currentState = StateBot.WAITING_TEXT;
+                    lastCommandWithText.setData(chatId,command);
+                    currentState.setData(chatId,StateBot.WAITING_TEXT);
                 }
                 return;
             }
-        } else if (currentState == StateBot.WAITING_TEXT) {
+        } else if (currentState.getData(chatId) == StateBot.WAITING_TEXT) {
             if (update.hasCallbackQuery()) {
                 messageSender.answerCallBack(update.getCallbackQuery(),"Недоступно");
                 return;
             }
-            if (lastCommandWithText != null && lastCommandWithText instanceof CommandWithText commandWithText) {
+            if (lastCommandWithText.getData(chatId) != null && lastCommandWithText.getData(chatId) instanceof CommandWithText commandWithText) {
                 commandWithText.executeWithText(update, this);
                 return;
             }
@@ -64,8 +67,8 @@ public class CommandHandler {
         return callBackData.substring(0, callBackData.indexOf(':'));
     }
 
-    public void setCurrentState(StateBot currentState) {
-        this.currentState = currentState;
+    public void setCurrentState(long chatId, StateBot currentState) {
+        this.currentState.setData(chatId,currentState);
     }
 
     public enum StateBot {

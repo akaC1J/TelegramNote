@@ -2,6 +2,7 @@ package telegramnote.telegramMain.commandImpl.note;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -11,19 +12,19 @@ import telegramnote.data.dto.Note;
 import telegramnote.service.RestServiceInterface;
 import telegramnote.telegramMain.Command;
 import telegramnote.telegramMain.MessageSender;
+import telegramnote.telegramMain.commandImpl.model.DataChatId;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+
 public class GetNotesCommand implements Command {
 
     private final RestServiceInterface restService;
     private final MessageSender messageSender;
 
-    private List<Note> notes;
-    private Long ownerChatId;
-
+    private DataChatId<List<Note>> notes = new DataChatId<>(new ArrayList<>());
 
     @Value("${bot.pagesize}")
     private int pageSize;
@@ -41,14 +42,18 @@ public class GetNotesCommand implements Command {
             chatId = update.getMessage().getChatId();
             currentOffSet = 0;
         } else {
-            chatId = ownerChatId;
+            chatId = update.getCallbackQuery().getMessage().getChatId();
             currentOffSet = getOffsetFromData(update.getCallbackQuery().getData());
             messageSender.answerCallBack(update.getCallbackQuery(),null);
         }
         CustomResponse<List<Note>> response = restService.getNotes(chatId, pageSize, currentOffSet);
         if (response.isSuccess()) {
-            notes = response.getBody();
-            ownerChatId = response.getBody().get(0).getChatId();
+            List<Note> localNotes = response.getBody();
+            notes.setData(chatId, localNotes);
+            if (localNotes.size() == 0) {
+                messageSender.sendMessage(chatId, "Не добавлено ни одной заметки");
+                return;
+            }
             int start = currentOffSet * pageSize + 1;
             int end = start + pageSize - 1;
             messageSender.sendMessage(chatId, "Заметки с " + start + " по " + end, initKeyBoard(update));
@@ -65,10 +70,12 @@ public class GetNotesCommand implements Command {
 
     @Override
     public InlineKeyboardMarkup initKeyBoard(Object data) {
+        Long chatId = ((Update) data).hasMessage() ? ((Update) data).getMessage().getChatId() :
+                ((Update) data).getCallbackQuery().getMessage().getChatId();
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-
-        for (Note note : notes) {
+        List<Note> localNotes = notes.getData(chatId);
+        for (Note note : localNotes) {
             List<InlineKeyboardButton> row = new ArrayList<>();
             InlineKeyboardButton button = new InlineKeyboardButton();
             button.setText(note.getLabel());
@@ -77,7 +84,7 @@ public class GetNotesCommand implements Command {
             keyboard.add(row);
         }
 
-        CustomResponse<Integer> response = restService.countNotesForChatId(ownerChatId);
+        CustomResponse<Integer> response = restService.countNotesForChatId(chatId);
         if (response.isSuccess()) {
             List<InlineKeyboardButton> row = new ArrayList<>();
             int maxOffset = (response.getBody() - 1) / pageSize;

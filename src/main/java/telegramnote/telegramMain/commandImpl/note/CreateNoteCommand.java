@@ -5,18 +5,21 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import telegramnote.data.CustomResponse;
 import telegramnote.data.dto.Note;
+import telegramnote.data.dto.User_;
 import telegramnote.service.RestServiceInterface;
 import telegramnote.telegramMain.CommandHandler;
 import telegramnote.telegramMain.CommandWithText;
 import telegramnote.telegramMain.MessageSender;
+import telegramnote.telegramMain.commandImpl.model.DataChatId;
 
 @Component
+
 public class CreateNoteCommand implements CommandWithText {
     private final RestServiceInterface restService;
     private final MessageSender messageSender;
 
-    private Step currentStep = Step.LABEL;
-    private Note currentNote;
+    private final DataChatId<Step> currentStep = new DataChatId<>(Step.LABEL);
+    private DataChatId<Note> currentNote = new DataChatId<>();
 
 
     public CreateNoteCommand(RestServiceInterface restService, @Lazy MessageSender messageSender) {
@@ -29,8 +32,8 @@ public class CreateNoteCommand implements CommandWithText {
         String answer = "Введите название заметки";
         long chatId = update.getMessage().getChatId();
         messageSender.sendMessage(chatId,answer);
-        currentStep = Step.LABEL;
-        currentNote = null;
+        currentStep.setData(chatId,Step.LABEL);
+        currentNote.setData(chatId,null);
     }
 
     @Override
@@ -40,33 +43,38 @@ public class CreateNoteCommand implements CommandWithText {
 
     @Override
     public void executeWithText(Update update, CommandHandler context) {
-        switch (currentStep) {
+        switch (currentStep.getData(update.getMessage().getChatId())) {
             case LABEL -> {
                 String answer = "Введите текст заметки:";
                 String label = update.getMessage().getText();
                 Long chatId = update.getMessage().getChatId();
-                currentNote = new Note();
-                currentNote.setLabel(label);
-                currentNote.setChatId(chatId);
+                Note localNote = new Note();
+                localNote.setLabel(label);
+                localNote.setChatId(chatId);
+                currentNote.setData(chatId,localNote);
                 messageSender.sendMessage(chatId,answer);
-                currentStep = Step.TEXT;
-                context.setCurrentState(CommandHandler.StateBot.WAITING_TEXT);
+                currentStep.setData(chatId,Step.TEXT);
+                context.setCurrentState(chatId, CommandHandler.StateBot.WAITING_TEXT);
             }
             case TEXT -> {
                 String answer;
                 String text = update.getMessage().getText();
-                currentNote.setText(text);
-                CustomResponse<Note> response = restService.postNote(currentNote);
+                Note localNote = currentNote.getData(update.getMessage().getChatId());
+                localNote.setText(text);
+                User_ user = new User_();
+                user.setChatId(localNote.getChatId());
+                localNote.setUser(user);
+                CustomResponse<Note> response = restService.postNote(localNote);
                 if (!response.isSuccess()) {
-                    answer = "Не удалось сохранить заметку \"" + currentNote.getLabel() + "\"." +
+                    answer = "Не удалось сохранить заметку \"" + localNote.getLabel() + "\"." +
                             "\nПричина: " + response.getErrorMessage();
                 } else {
                     answer = "Заметка \"" + response.getBody().getLabel() + "\" успешно сохранено";
                 }
-                messageSender.sendMessage(currentNote.getChatId(), answer, initKeyBoard(update));
-                currentStep = Step.LABEL;
-                context.setCurrentState(CommandHandler.StateBot.WAITING_COMMAND);
-                currentNote = null;
+                messageSender.sendMessage(localNote.getChatId(), answer, initKeyBoard(update));
+                currentStep.setData(localNote.getChatId(), Step.LABEL);
+                context.setCurrentState(localNote.getChatId(), CommandHandler.StateBot.WAITING_COMMAND);
+                currentNote.setData(localNote.getChatId(),null);
             }
 
         }

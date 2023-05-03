@@ -1,6 +1,7 @@
 package telegramnote.telegramMain.commandImpl.note;
 
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import telegramnote.data.CustomResponse;
@@ -9,6 +10,7 @@ import telegramnote.telegramMain.Command;
 import telegramnote.telegramMain.MessageSender;
 
 @Component
+
 public class DeleteNoteCommand implements Command {
 
     private final MessageSender messageSender;
