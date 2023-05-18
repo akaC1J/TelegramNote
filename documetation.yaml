@@ -73,6 +73,27 @@ paths:
           description: Некорректные данные запроса
         '403':
           description: Превышено максимальное допустимое количество символов
+    put:
+      tags:
+        - note
+      summary: Изменить заметку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+      responses:
+        '200':
+          description: Заметка успешно изменена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          description: Некорректные данные запроса
+        '403':
+          description: Превышено максимальное допустимое количество символов
     get:
       tags:
         - note
@@ -205,9 +226,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Note'
-      required:
-        - chatId
-        - name
     Note:
       type: object
       properties:
@@ -225,6 +243,3 @@ components:
           example: "какой-то текст заметки"
       required:
         - id
-        - label
-        - user
-        - text

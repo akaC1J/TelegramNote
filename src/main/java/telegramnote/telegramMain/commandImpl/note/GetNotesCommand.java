@@ -2,7 +2,6 @@ package telegramnote.telegramMain.commandImpl.note;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -24,7 +23,7 @@ public class GetNotesCommand implements Command {
     private final RestServiceInterface restService;
     private final MessageSender messageSender;
 
-    private DataChatId<List<Note>> notes = new DataChatId<>(new ArrayList<>());
+    private final DataChatId<List<Note>> notes = new DataChatId<>(new ArrayList<>());
 
     @Value("${bot.pagesize}")
     private int pageSize;
