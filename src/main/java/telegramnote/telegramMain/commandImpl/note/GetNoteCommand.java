@@ -62,10 +62,20 @@ public class GetNoteCommand implements Command {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         keyboard.add(new ArrayList<>());
+        InlineKeyboardButton editLabel = new InlineKeyboardButton();
+        editLabel.setText("Изменить название");
+        editLabel.setCallbackData("edit_label_note: id=" + ((Note) data).getId());
+        InlineKeyboardButton editText = new InlineKeyboardButton();
+        editText.setText("Изменить текст");
+        editText.setCallbackData("edit_text_note: id=" + ((Note) data).getId());
+        keyboard.get(0).add(editText);
+        keyboard.get(0).add(editLabel);
+
+        keyboard.add(new ArrayList<>());
         InlineKeyboardButton button = new InlineKeyboardButton();
         button.setText("Удалить заметку");
         button.setCallbackData("delete_note: id=" + ((Note) data).getId());
-        keyboard.get(0).add(button);
+        keyboard.get(1).add(button);
         inlineKeyboardMarkup.setKeyboard(keyboard);
         return inlineKeyboardMarkup;
     }

@@ -10,4 +10,9 @@ import lombok.NoArgsConstructor;
 public class User_ {
     private Long chatId;
     private String name;
+
+    public User_ setChatId(Long chatId) {
+        this.chatId = chatId;
+        return this;
+    }
 }

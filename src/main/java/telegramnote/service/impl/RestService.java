@@ -3,6 +3,7 @@ package telegramnote.service.impl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,6 @@ import telegramnote.data.dto.Note;
 import telegramnote.data.dto.User_;
 import telegramnote.service.RestServiceInterface;
 
-import java.net.ConnectException;
 import java.util.List;
 
 @Service
@@ -105,6 +105,11 @@ public final class RestService implements RestServiceInterface {
         return customResponse;
     }
 
+    @Override
+    public CustomResponse<Note> patchNote(Note note) {
+        return baseDoResponse(note, "/note", Note.class, Method.PUT);
+    }
+
     private <A, P> CustomResponse<A> baseDoResponse(P singleParameter, String url,
                                                     Class<A> answerType, Method method ) {
         CustomResponse<A> customResponse = new CustomResponse<>();
@@ -113,6 +118,10 @@ public final class RestService implements RestServiceInterface {
             switch (method) {
                 case GET -> response = restTemplate.getForEntity(url, answerType, singleParameter);
                 case POST -> response = restTemplate.postForEntity(url, singleParameter, answerType);
+                case PUT -> {
+                    HttpEntity<P> requestEntity = new HttpEntity<>(singleParameter);
+                    response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, answerType);
+                }
             }
             if (response != null) {
                 customResponse.setBody(response.getBody());
@@ -130,6 +139,6 @@ public final class RestService implements RestServiceInterface {
     }
 
     private enum Method {
-        GET,POST, DELETE,
+        GET,POST, DELETE, PUT,
     }
 }

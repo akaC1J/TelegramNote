@@ -201,6 +201,10 @@ components:
         name:
           type: string
           example: "Василий"
+        noteList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Note'
       required:
         - chatId
         - name
@@ -216,10 +220,6 @@ components:
           example: "название_заметки"
         user:
           $ref: '#/components/schemas/User'
-        chatId:
-          type: integer
-          format: int64
-          example: 234567
         text:
           type: string
           example: "какой-то текст заметки"
@@ -227,5 +227,4 @@ components:
         - id
         - label
         - user
-        - chatId
         - text
