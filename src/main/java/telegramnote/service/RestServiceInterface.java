@@ -20,4 +20,7 @@ public interface RestServiceInterface {
     CustomResponse<Integer> countNotesForChatId(Long chatId);
 
     CustomResponse<Void> deleteNote(Long noteId, Long chatId);
+
+    CustomResponse<Note> patchNote(Note note);
+
 }

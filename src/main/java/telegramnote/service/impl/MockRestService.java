@@ -54,7 +54,7 @@ public class MockRestService implements RestServiceInterface {
         for (int i = 0; i < 8; i++) {
             Note note = new Note();
             note.setText(i + " some text " + i);
-            note.setChatId(chatId);
+            note.setUser(new User_().setChatId(chatId));
             note.setLabel(i + ": label");
             note.setId((long) (i * 2));
             notes.add(note);
@@ -80,7 +80,7 @@ public class MockRestService implements RestServiceInterface {
         if (isSuccess()) {
             Note note = new Note();
             note.setText("QWERTYUIOP{asdfghjkl:zxcvbnm<");
-            note.setChatId(chatId);
+            note.setUser(new User_().setChatId(chatId));
             note.setLabel("Название getNote");
             note.setId(idNote);
             customResponse.setBody(note);
@@ -114,6 +114,14 @@ public class MockRestService implements RestServiceInterface {
         return customResponse;
     }
 
+    @Override
+    public CustomResponse<Note> patchNote(Note note) {
+        CustomResponse<Note> customResponse = getNote(null, note.getId());
+        if (!customResponse.getSuccess()) {
+            customResponse.setErrorMessage("Ошибка изменения названия заметки");
+        }
+        return customResponse;
+    }
 
     public boolean isSuccess() {
         /*int num = (int) (Math.random() * 10);
