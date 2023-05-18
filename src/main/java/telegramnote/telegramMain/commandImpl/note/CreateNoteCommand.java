@@ -19,7 +19,7 @@ public class CreateNoteCommand implements CommandWithText {
     private final MessageSender messageSender;
 
     private final DataChatId<Step> currentStep = new DataChatId<>(Step.LABEL);
-    private DataChatId<Note> currentNote = new DataChatId<>();
+    private final DataChatId<Note> currentNote = new DataChatId<>();
 
 
     public CreateNoteCommand(RestServiceInterface restService, @Lazy MessageSender messageSender) {
@@ -43,14 +43,14 @@ public class CreateNoteCommand implements CommandWithText {
 
     @Override
     public void executeWithText(Update update, CommandHandler context) {
-        switch (currentStep.getData(update.getMessage().getChatId())) {
+        Long chatId = update.getMessage().getChatId();
+        switch (currentStep.getData(chatId)) {
             case LABEL -> {
                 String answer = "Введите текст заметки:";
                 String label = update.getMessage().getText();
-                Long chatId = update.getMessage().getChatId();
                 Note localNote = new Note();
                 localNote.setLabel(label);
-                localNote.setChatId(chatId);
+                localNote.setUser(new User_().setChatId(chatId));
                 currentNote.setData(chatId,localNote);
                 messageSender.sendMessage(chatId,answer);
                 currentStep.setData(chatId,Step.TEXT);
@@ -59,11 +59,9 @@ public class CreateNoteCommand implements CommandWithText {
             case TEXT -> {
                 String answer;
                 String text = update.getMessage().getText();
-                Note localNote = currentNote.getData(update.getMessage().getChatId());
+                Note localNote = currentNote.getData(chatId);
                 localNote.setText(text);
-                User_ user = new User_();
-                user.setChatId(localNote.getChatId());
-                localNote.setUser(user);
+                localNote.setUser(new User_().setChatId(chatId));
                 CustomResponse<Note> response = restService.postNote(localNote);
                 if (!response.isSuccess()) {
                     answer = "Не удалось сохранить заметку \"" + localNote.getLabel() + "\"." +
@@ -71,10 +69,10 @@ public class CreateNoteCommand implements CommandWithText {
                 } else {
                     answer = "Заметка \"" + response.getBody().getLabel() + "\" успешно сохранено";
                 }
-                messageSender.sendMessage(localNote.getChatId(), answer, initKeyBoard(update));
-                currentStep.setData(localNote.getChatId(), Step.LABEL);
-                context.setCurrentState(localNote.getChatId(), CommandHandler.StateBot.WAITING_COMMAND);
-                currentNote.setData(localNote.getChatId(),null);
+                messageSender.sendMessage(chatId, answer, initKeyBoard(update));
+                currentStep.setData(chatId, Step.LABEL);
+                context.setCurrentState(chatId, CommandHandler.StateBot.WAITING_COMMAND);
+                currentNote.setData(chatId, null);
             }
 
         }
