@@ -33,8 +33,7 @@ public class EditTextNoteCommand implements CommandWithText {
         Long noteId = getIdFromData(update.getCallbackQuery().getData());
         Note note = new Note();
         note.setId(noteId);
-        User_ user = new User_();
-        user.setChatId(chatId);
+        note.setUser(new User_().setChatId(chatId));
         noteDataChatId.setData(chatId, note);
         messageSender.sendMessage(chatId,answer);
         messageSender.answerCallBack(update.getCallbackQuery(), null);
