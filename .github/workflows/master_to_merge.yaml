@@ -1,0 +1,22 @@
+name: Auto merge dev into master
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge
+        run: |
+          git config --global user.name akaC1j
+          git config --global user.email kirillsmol98@gmail.com
+          git checkout dev
+          git merge master --no-edit
+          git push origin dev
