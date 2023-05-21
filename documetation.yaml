@@ -18,7 +18,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/PostUser'
       responses:
         '201':
           description: Пользователь успешно создан
@@ -49,6 +49,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '400':
+          description: неверные параметры запрос
         '404':
           description: Пользователь не найден
   /note:
@@ -61,7 +63,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Note'
+              $ref: '#/components/schemas/PostNote'
       responses:
         '200':
           description: Заметка успешно создана
@@ -82,7 +84,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Note'
+              $ref: '#/components/schemas/PutNote'
       responses:
         '200':
           description: Заметка успешно изменена
@@ -127,6 +129,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Note'
+        '400':
+          description: неверные параметры запрос
   /note/{idNote}:
     get:
       tags:
@@ -152,6 +156,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Note'
+        '400':
+          description: неверные параметры запрос
         '404':
           description: Заметка не найдена
         '403':
@@ -176,6 +182,8 @@ paths:
               schema:
                 type: integer
                 format: int32
+        '400':
+          description: неверные параметры запрос
         '404':
           description: Идентификатор чата не найден
   /note/{id}:
@@ -206,6 +214,8 @@ paths:
                 properties:
                   success:
                     type: boolean
+        '400':
+          description: неверные параметры запрос
         '404':
           description: Заметка не найдена
         '403':
@@ -226,6 +236,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Note'
+    PostUser:
+      description: DTO для регистрации (post) user
+      type: object
+      properties:
+        chatId:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Василий"
     Note:
       type: object
       properties:
@@ -243,3 +264,56 @@ components:
           example: "какой-то текст заметки"
       required:
         - id
+    PutNote:
+      type: object
+      description: DTO объект для передачи в запрос PUT, со своими
+                   необязательными параметрами
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        label:
+          type: string
+          example: "название_заметки"
+        user:
+          type: object
+          properties:
+            chatId:
+              type: integer
+              format: int64
+              example: 123456
+          required:
+            - chatId
+        text:
+          type: string
+          example: "какой-то текст заметки"
+      required:
+        - id
+        - user
+    PostNote:
+      type: object
+      description: DTO объект для передачи в запрос POST, со своими
+        необязательными параметрами
+      properties:
+        label:
+          type: string
+          example: "название_заметки"
+        user:
+          type: object
+          properties:
+            chatId:
+              type: integer
+              format: int64
+              example: 123456
+          required:
+            - chatId
+        text:
+          type: string
+          example: "какой-то текст заметки"
+      required:
+        - user
+        - label
+        - text
+
+
